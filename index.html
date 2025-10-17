@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fast Shop - تسجيل الدخول</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+  </style>
+</head>
+<body class="bg-green-50 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-green-600 mb-2">🛍️ Fast Shop</h1>
+      <p class="text-gray-500">مرحباً بك، سجّل الدخول للمتابعة</p>
+    </div>
+
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">اسم المستخدم</label>
+        <input id="username" type="text" placeholder="أدخل اسم المستخدم" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 outline-none" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">كلمة المرور</label>
+        <input id="password" type="password" placeholder="••••••••" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 outline-none" required />
+      </div>
+
+      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">دخول</button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500 mt-5">© 2025 Fast Shop. جميع الحقوق محفوظة.</p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      // حسابات تجريبية
+      const users = {
+        'admin': { password: 'admin123', role: 'admin' },
+        'user': { password: 'user123', role: 'user' },
+        'viewer': { password: 'viewer123', role: 'viewer' }
+      };
+
+      if (users[username] && users[username].password === password) {
+        localStorage.setItem('fastshop_user', JSON.stringify({ username, role: users[username].role }));
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('❌ اسم المستخدم أو كلمة المرور غير صحيحة');
+      }
+    });
+  </script>
+</body>
+</html>

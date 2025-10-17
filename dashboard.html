@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم - Fast Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+  </style>
+</head>
+<body class="bg-green-50 min-h-screen flex">
+  <!-- الشريط الجانبي -->
+  <aside class="w-64 bg-white shadow-md flex flex-col">
+    <div class="p-6 border-b">
+      <h1 class="text-2xl font-bold text-green-600">🛍️ Fast Shop</h1>
+      <p class="text-gray-500 text-sm">لوحة التحكم</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+      <button class="w-full text-right py-2 px-3 rounded-lg hover:bg-green-100 font-medium text-gray-700" onclick="showSection('dashboard')">📊 الرئيسية</button>
+      <button class="w-full text-right py-2 px-3 rounded-lg hover:bg-green-100 font-medium text-gray-700" onclick="showSection('products')">📦 المنتجات</button>
+      <button class="w-full text-right py-2 px-3 rounded-lg hover:bg-green-100 font-medium text-gray-700" onclick="showSection('stock')">📈 المخزون</button>
+      <button class="w-full text-right py-2 px-3 rounded-lg hover:bg-green-100 font-medium text-gray-700" onclick="showSection('sales')">💰 المبيعات</button>
+      <button class="w-full text-right py-2 px-3 rounded-lg hover:bg-green-100 font-medium text-gray-700" onclick="logout()">🚪 تسجيل الخروج</button>
+    </nav>
+  </aside>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="flex-1 p-6 overflow-y-auto">
+    <header class="flex justify-between items-center mb-6">
+      <h2 id="pageTitle" class="text-2xl font-bold text-gray-700">📊 الرئيسية</h2>
+      <div id="userInfo" class="text-gray-600"></div>
+    </header>
+
+    <!-- أقسام الصفحة -->
+    <section id="dashboard" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="text-gray-600">إجمالي المنتجات</h3>
+          <p id="totalProducts" class="text-2xl font-bold text-green-600">0</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="text-gray-600">إجمالي المبيعات</h3>
+          <p id="totalSales" class="text-2xl font-bold text-green-600">0 دج</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="text-gray-600">الطلبات النشطة</h3>
+          <p id="activeOrders" class="text-2xl font-bold text-green-600">0</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="text-gray-600">المستخدم</h3>
+          <p id="userRole" class="text-lg font-semibold text-gray-700">—</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="products" class="hidden">
+      <h3 class="text-xl font-semibold mb-4 text-gray-700">📦 إدارة المنتجات</h3>
+      <div class="bg-white p-5 rounded-xl shadow">
+        <div class="flex flex-wrap gap-3 mb-4">
+          <input id="prodName" type="text" placeholder="اسم المنتج" class="border border-gray-300 rounded-lg p-2 flex-1" />
+          <input id="prodQty" type="number" placeholder="الكمية" class="border border-gray-300 rounded-lg p-2 w-28" />
+          <input id="prodPrice" type="number" placeholder="السعر" class="border border-gray-300 rounded-lg p-2 w-32" />
+          <button onclick="addProduct()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">➕ إضافة</button>
+        </div>
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-green-100 text-gray-700">
+              <th class="p-2 border">#</th>
+              <th class="p-2 border">المنتج</th>
+              <th class="p-2 border">الكمية</th>
+              <th class="p-2 border">السعر</th>
+              <th class="p-2 border">الإجمالي</th>
+              <th class="p-2 border">تحكم</th>
+            </tr>
+          </thead>
+          <tbody id="prodTable" class="text-center"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="stock" class="hidden">
+      <h3 class="text-xl font-semibold mb-4 text-gray-700">📈 إدارة المخزون</h3>
+      <p class="text-gray-500">(قريبًا... عرض تنبيهات المخزون المنخفض)</p>
+    </section>
+
+    <section id="sales" class="hidden">
+      <h3 class="text-xl font-semibold mb-4 text-gray-700">💰 تقارير المبيعات</h3>
+      <p class="text-gray-500">(قريبًا... عرض الإحصائيات والرسوم البيانية)</p>
+    </section>
+  </main>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('fastshop_user'));
+    if (!user) window.location.href = 'login.html';
+
+    document.getElementById('userInfo').innerText = `مرحبًا، ${user.username}`;
+    document.getElementById('userRole').innerText = user.role;
+
+    let products = [];
+
+    function showSection(id) {
+      document.querySelectorAll('main section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById('pageTitle').innerText = document.getElementById(id).querySelector('h3')?.innerText || '📊 الرئيسية';
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prodName').value.trim();
+      const qty = parseInt(document.getElementById('prodQty').value);
+      const price = parseFloat(document.getElementById('prodPrice').value);
+      if (!name || isNaN(qty) || isNaN(price)) {
+        alert('يرجى إدخال جميع البيانات بشكل صحيح');
+        return;
+      }
+      products.push({ id: Date.now(), name, qty, price });
+      renderProducts();
+      updateDashboard();
+      document.getElementById('prodName').value = '';
+      document.getElementById('prodQty').value = '';
+      document.getElementById('prodPrice').value = '';
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById('prodTable');
+      tbody.innerHTML = '';
+      products.forEach((p, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class='border p-2'>${i + 1}</td>
+          <td class='border p-2'>${p.name}</td>
+          <td class='border p-2'>${p.qty}</td>
+          <td class='border p-2'>${p.price.toFixed(2)} دج</td>
+          <td class='border p-2'>${(p.qty * p.price).toFixed(2)} دج</td>
+          <td class='border p-2'>
+            <button onclick="deleteProduct(${p.id})" class='text-red-600 hover:underline'>حذف</button>
+          </td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function deleteProduct(id) {
+      if (confirm('هل تريد حذف هذا المنتج؟')) {
+        products = products.filter(p => p.id !== id);
+        renderProducts();
+        updateDashboard();
+      }
+    }
+
+    function updateDashboard() {
+      document.getElementById('totalProducts').innerText = products.length;
+      let totalSales = 0;
+      products.forEach(p => totalSales += p.qty * p.price);
+      document.getElementById('totalSales').innerText = totalSales.toFixed(2) + ' دج';
+    }
+
+    function logout() {
+      localStorage.removeItem('fastshop_user');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
